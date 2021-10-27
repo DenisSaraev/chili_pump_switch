@@ -41,7 +41,7 @@ try:
 except AttributeError:
     logger.critical(f'Not enought attributes for work. Read --help')
     sys.exit(1)
-    
+
 pin_valve=args.pin_valve
 logger.info(f'User input: valve pin = {pin_valve}')
 
@@ -54,10 +54,10 @@ def activate_pump_switch(PIN_WP_MOSF):
     '''
     This module activate pump.
     '''
-    
+
         #Digital pin for controlling pump. Its switched on via a mosfet N-type (normally disabled)
-        
-    wp.pinMode(PIN_WP_MOSF, wp.OUTPUT)                
+
+    wp.pinMode(PIN_WP_MOSF, wp.OUTPUT)
     try:
         #Changing mosfet statement
         wp.digitalWrite(PIN_WP_MOSF, True) #set True for enable
@@ -65,15 +65,15 @@ def activate_pump_switch(PIN_WP_MOSF):
         #pump will work till 'work_signal' in True statement
         while work_signal is True:
             sleep
-    
+
     except Exception as e:
-        logging.exception('Exception occured') 
-    
+        logging.exception('Exception occured')
+
     finally:
         #Changing mosfet statement
         wp.digitalWrite(PIN_WP_MOSF, False)
         logger.info(f'Digital pin {PIN_WP_MOSF} disabled, pump disabled')
-    
+
 def activate_valve_switch(PIN_WP_MOSF):
     '''
     This module open valve.
@@ -81,7 +81,7 @@ def activate_valve_switch(PIN_WP_MOSF):
 
     #Digital pin for controlling pump. Its switched on via a mosfet N-type (normally disabled)
     wp.pinMode(PIN_WP_MOSF, wp.OUTPUT)
-        
+
     try:
         #Changing mosfet statement
         wp.digitalWrite(PIN_WP_MOSF, True) #set True for enable
@@ -89,10 +89,10 @@ def activate_valve_switch(PIN_WP_MOSF):
         #valve will work till 'work_signal' in True statement
         while work_signal is True:
             sleep
-    
+
     except Exception as e:
         logging.exception('Exception occured')
-    
+
     finally:
         #Changing mosfet statement
         wp.digitalWrite(PIN_WP_MOSF, False)
@@ -110,23 +110,23 @@ def user_signal():
     try:
         userinput=inputimeout('Print anything to disactivate pump\n',timeout=MAX_TIME)
         logger.info(f'User input: {userinput}')
-        
+
         work_signal=False
         logger.info(f'Sent signal to stop from user')
 
     except TimeoutOccurred:
         work_signal=False
         logger.warning(f'Time expired: {MAX_TIME}sec. Script force stopped!')
-  
+
 def irrigation_switch(VALVE):
     '''
     Combines the operation of the pump and valves. Disable it when user input 'stop'
     '''
-    try:   
+    try:
         thread1=Thread(target=activate_valve_switch, args=(VALVE,))
         thread2=Thread(target=activate_pump_switch, args=(7,))
         thread3=Thread(target=user_signal)
-        
+
         thread1.start()
         thread2.start()
         thread3.start()
@@ -134,7 +134,8 @@ def irrigation_switch(VALVE):
         thread1.join()
         thread2.join()
         thread3.join()
-    except (KeyboardInterrupt, SystemExit):        
+
+    except (KeyboardInterrupt, SystemExit):
         global work_signal
         work_signal=False
         logging.exception('Exception occured')
@@ -144,7 +145,7 @@ def irrigation_switch(VALVE):
         wp.digitalWrite(7, False) 
 def main():
     irrigation_switch(pin_valve)
-    
+
 if __name__=='__main__':
     main()
 
